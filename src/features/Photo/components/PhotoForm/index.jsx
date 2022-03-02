@@ -1,10 +1,12 @@
+import { Button, Grid } from '@mui/material';
 import InputField from 'components/form-controls/InputField';
+import RandomPhotoField from 'components/form-controls/RandomPhotoField';
 import SelectField from 'components/form-controls/SelectField';
-import Images from 'constants/images';
 import PropTypes from 'prop-types';
 import React from 'react';
-import { Button, Form } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
 
 PhotoForm.propTypes = {
   onSubmit: PropTypes.func,
@@ -14,47 +16,73 @@ PhotoForm.defaultProps = {
   onSubmit: null,
 };
 
-function PhotoForm(props) {
-  const { handleSubmit, control } = useForm({
+function PhotoForm() {
+  console.log('render');
+  const schema = yup
+    .object()
+    .shape({
+      title: yup
+        .string()
+        .trim()
+        .required('This field is required!')
+        .min(4, 'This contains at least 4 characters!')
+        .max(20, 'This contains up to 20 characters!'),
+      category: yup.object().nullable().required('This field is required!'),
+      photo: yup.string().when('category', {
+        is: ({ value }) => value == 2,
+        then: yup.string().notRequired(),
+        otherwise: yup.string().required('This field is required!'),
+      }),
+    })
+    .required();
+
+  const {
+    formState: { errors },
+    handleSubmit,
+    reset,
+    clearErrors,
+    setValue,
+    control,
+  } = useForm({
+    mode: 'onChange',
     defaultValues: {
       title: '',
       category: null,
+      photo: '',
     },
+    resolver: yupResolver(schema),
   });
 
-  const onSubmit = data => console.log('submit', data);
+  const onSubmit = data => {
+    console.log('submit', data);
+    reset();
+  };
 
   return (
-    <Form onSubmit={handleSubmit(onSubmit)}>
-      <Form.Group>
-        <Form.Label htmlFor='titleId'>Title</Form.Label>
-        <InputField control={control} name='title' type='text' id='titleId' placeholder='Eg: Wow nature...' />
-      </Form.Group>
-
-      <Form.Group>
-        <Form.Label>Category</Form.Label>
-        <SelectField control={control} name='category' id='categoryId' placeholder="What's your photo category?" />
-      </Form.Group>
-
-      <Form.Group>
-        <Form.Label htmlFor='categoryId'>Photo</Form.Label>
-
-        <div>
-          <Button type='button' variant='outline-primary'>
-            Random a photo
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <Grid container direction='column' rowSpacing='30'>
+        <Grid item>
+          <InputField control={control} name='title' id='titleId' label='Title' errors={errors} />
+        </Grid>
+        <Grid item>
+          <SelectField control={control} name='category' id='categoryId' label='Category' errors={errors} />
+        </Grid>
+        <Grid container item justifyContent='center'>
+          <RandomPhotoField
+            setValue={setValue}
+            control={control}
+            name='photo'
+            errors={errors}
+            clearErrors={clearErrors}
+          />
+        </Grid>
+        <Grid item>
+          <Button variant='outlined' color='secondary' type='submit' fullWidth>
+            Add to Album
           </Button>
-        </div>
-        <div>
-          <img width='200px' height='200px' src={Images.COLORFUL_BG} alt='colorful background' />
-        </div>
-      </Form.Group>
-
-      <Form.Group>
-        <Button type='submit' color='primary'>
-          Add to album
-        </Button>
-      </Form.Group>
-    </Form>
+        </Grid>
+      </Grid>
+    </form>
   );
 }
 

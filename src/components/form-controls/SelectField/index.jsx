@@ -1,35 +1,44 @@
+import { Autocomplete, TextField } from '@mui/material';
 import { PHOTO_CATEGORY_OPTIONS } from 'constants/global';
 import PropTypes from 'prop-types';
 import React from 'react';
 import { Controller } from 'react-hook-form';
-import Select from 'react-select';
 
 SelectField.propTypes = {
   control: PropTypes.object.isRequired,
   name: PropTypes.string.isRequired,
   id: PropTypes.string,
-  placeholder: PropTypes.string,
+  label: PropTypes.string,
 };
 SelectField.defaultProps = {
   id: '',
-  placeholder: '',
+  label: '',
 };
 
 function SelectField(props) {
-  const { control, name, id, placeholder } = props;
+  const { control, name, id, label, errors } = props;
 
   return (
     <Controller
       control={control}
       name={name}
       render={({ field: { onChange, value } }) => (
-        <Select
-          id={id}
-          name={name}
-          placeholder={placeholder}
+        <Autocomplete
           options={PHOTO_CATEGORY_OPTIONS}
-          onChange={onChange}
-          value={value}
+          renderInput={params => (
+            <TextField
+              {...params}
+              id={id}
+              label={label}
+              color='secondary'
+              size='small'
+              error={!!errors[name]?.message}
+              helperText={errors[name]?.message}
+            />
+          )}
+          onChange={(event, value) => onChange(value)}
+          value={value || null}
+          isOptionEqualToValue={(option, value) => option.value === value.value}
         />
       )}
     />
