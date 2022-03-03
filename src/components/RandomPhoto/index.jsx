@@ -32,17 +32,17 @@ function RandomPhoto({ name, imageUrl, onImageUrlChange }) {
         Random a photo
       </Button>
       <img
-        src={imageUrl || Images.ORANGE_BG}
+        src={imageUrl || Images.EEMPTY_BG}
         alt='img'
         style={{
-          marginTop: '30px',
-          padding: '30px',
           display: 'block',
           maxWidth: '100%',
-          objectFit: 'cover',
-          aspectRatio: '1',
+          marginTop: '30px',
+          padding: '30px',
           border: '5px dashed #eee',
           borderRadius: 4,
+          objectFit: 'cover',
+          aspectRatio: '1',
         }}
       />
     </>

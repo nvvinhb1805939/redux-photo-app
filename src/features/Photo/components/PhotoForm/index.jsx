@@ -1,3 +1,5 @@
+import { yupResolver } from '@hookform/resolvers/yup';
+import LoadingButton from '@mui/lab/LoadingButton';
 import { Button, Grid } from '@mui/material';
 import InputField from 'components/form-controls/InputField';
 import RandomPhotoField from 'components/form-controls/RandomPhotoField';
@@ -5,7 +7,6 @@ import SelectField from 'components/form-controls/SelectField';
 import PropTypes from 'prop-types';
 import React from 'react';
 import { useForm } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 
 PhotoForm.propTypes = {
@@ -16,8 +17,7 @@ PhotoForm.defaultProps = {
   onSubmit: null,
 };
 
-function PhotoForm() {
-  console.log('render');
+function PhotoForm({ onSubmit }) {
   const schema = yup
     .object()
     .shape({
@@ -29,7 +29,7 @@ function PhotoForm() {
         .max(20, 'This contains up to 20 characters!'),
       category: yup.object().nullable().required('This field is required!'),
       photo: yup.string().when('category', {
-        is: ({ value }) => value == 2,
+        is: item => item?.value == 2 || false,
         then: yup.string().notRequired(),
         otherwise: yup.string().required('This field is required!'),
       }),
@@ -37,7 +37,7 @@ function PhotoForm() {
     .required();
 
   const {
-    formState: { errors },
+    formState: { isSubmitting, errors },
     handleSubmit,
     reset,
     clearErrors,
@@ -53,13 +53,13 @@ function PhotoForm() {
     resolver: yupResolver(schema),
   });
 
-  const onSubmit = data => {
-    console.log('submit', data);
+  const handleOnSubmit = values => {
+    onSubmit(values);
     reset();
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <form onSubmit={handleSubmit(handleOnSubmit)}>
       <Grid container direction='column' rowSpacing='30'>
         <Grid item>
           <InputField control={control} name='title' id='titleId' label='Title' errors={errors} />
@@ -77,9 +77,9 @@ function PhotoForm() {
           />
         </Grid>
         <Grid item>
-          <Button variant='outlined' color='secondary' type='submit' fullWidth>
-            Add to Album
-          </Button>
+          <LoadingButton loading variant='outlined'>
+            Submit
+          </LoadingButton>
         </Grid>
       </Grid>
     </form>
@@ -87,3 +87,9 @@ function PhotoForm() {
 }
 
 export default PhotoForm;
+
+{
+  /* <Button variant='outlined' color='secondary' type='submit' fullWidth>
+            Add to Album
+          </Button> */
+}

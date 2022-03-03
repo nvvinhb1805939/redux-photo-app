@@ -35,8 +35,7 @@ function RandomPhotoField({ setValue, control, name, errors, clearErrors }) {
                   style={{
                     color: '#d32f2f',
                     fontSize: 12,
-                    marginLeft: 14,
-                    marginTop: 4,
+                    margin: '4px 0 0 14px',
                     textAlign: 'left',
                     fontFamily: 'Roboto',
                     letterSpacing: '0.03333em',
