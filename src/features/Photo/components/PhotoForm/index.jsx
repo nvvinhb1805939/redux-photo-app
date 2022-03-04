@@ -1,43 +1,39 @@
 import { yupResolver } from '@hookform/resolvers/yup';
-import LoadingButton from '@mui/lab/LoadingButton';
-import { Button, Grid } from '@mui/material';
+import { Button, CircularProgress, Grid } from '@mui/material';
 import InputField from 'components/form-controls/InputField';
 import RandomPhotoField from 'components/form-controls/RandomPhotoField';
 import SelectField from 'components/form-controls/SelectField';
 import PropTypes from 'prop-types';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
+import { useLocation } from 'react-router-dom';
 import * as yup from 'yup';
 
 PhotoForm.propTypes = {
   onSubmit: PropTypes.func,
+  defaultValues: PropTypes.object,
+  isAddMode: PropTypes.bool,
 };
 
 PhotoForm.defaultProps = {
   onSubmit: null,
+  defaultValues: {},
+  isAddMode: true,
 };
 
-function PhotoForm({ onSubmit }) {
+function PhotoForm({ onSubmit, defaultValues, isAddMode }) {
+  const location = useLocation();
   const schema = yup
     .object()
     .shape({
-      title: yup
-        .string()
-        .trim()
-        .required('This field is required!')
-        .min(4, 'This contains at least 4 characters!')
-        .max(20, 'This contains up to 20 characters!'),
+      title: yup.string().trim().required('This field is required!').min(4, 'This contains at least 4 characters!'),
       category: yup.object().nullable().required('This field is required!'),
-      photo: yup.string().when('category', {
-        is: item => item?.value == 2 || false,
-        then: yup.string().notRequired(),
-        otherwise: yup.string().required('This field is required!'),
-      }),
+      photo: yup.string().trim().required('This field is required!'),
     })
     .required();
 
   const {
-    formState: { isSubmitting, errors },
+    formState: { isSubmitSuccessful, isSubmitting, errors },
     handleSubmit,
     reset,
     clearErrors,
@@ -45,18 +41,26 @@ function PhotoForm({ onSubmit }) {
     control,
   } = useForm({
     mode: 'onChange',
-    defaultValues: {
-      title: '',
-      category: null,
-      photo: '',
-    },
+    defaultValues: defaultValues,
     resolver: yupResolver(schema),
   });
 
   const handleOnSubmit = values => {
-    onSubmit(values);
-    reset();
+    const successMessage = isAddMode ? 'Add photo success!' : 'Update photo success!';
+    return new Promise(resolve => {
+      setTimeout(() => {
+        onSubmit(values);
+        reset();
+        resolve(successMessage);
+      }, 2000);
+    }).then(resolve => {
+      alert(resolve);
+    });
   };
+
+  useEffect(() => {
+    reset(defaultValues);
+  }, [location]);
 
   return (
     <form onSubmit={handleSubmit(handleOnSubmit)}>
@@ -77,9 +81,10 @@ function PhotoForm({ onSubmit }) {
           />
         </Grid>
         <Grid item>
-          <LoadingButton loading variant='outlined'>
-            Submit
-          </LoadingButton>
+          <Button variant='outlined' color='secondary' type='submit' fullWidth>
+            {isSubmitting && <CircularProgress color='secondary' size={20} thickness={3} />}
+            {isAddMode ? 'Add to Album' : 'Update Photo'}
+          </Button>
         </Grid>
       </Grid>
     </form>
@@ -87,9 +92,3 @@ function PhotoForm({ onSubmit }) {
 }
 
 export default PhotoForm;
-
-{
-  /* <Button variant='outlined' color='secondary' type='submit' fullWidth>
-            Add to Album
-          </Button> */
-}

@@ -1,19 +1,36 @@
-import { Grid } from '@mui/material';
+import { Container, ImageList } from '@mui/material';
+import Banner from 'components/Banner';
+import TextLink from 'components/TextLink';
+import Images from 'constants/images';
+import PhotoList from 'features/Photo/components/PhotoList';
+import { removePhoto } from 'features/Photo/photoSlice';
 import React from 'react';
-import { Link } from 'react-router-dom';
-import Banner from '../../../../components/Banner';
-import Images from '../../../../constants/images';
+import { useDispatch, useSelector } from 'react-redux';
+import { Link, useNavigate } from 'react-router-dom';
 
-MainPage.propTypes = {};
+function MainPage() {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const photos = useSelector(state => state.photos);
 
-function MainPage(props) {
+  const handleEditClick = photo => {
+    navigate(`/photos/${photo.id}`);
+  };
+
+  const handleDeleteClick = photo => {
+    const action = removePhoto(photo);
+    dispatch(action);
+  };
+
   return (
     <div className='photo-main'>
       <Banner title='Your awesome photos 🎉' backgroundUrl={Images.PINK_BG} />
-
-      <Grid container justifyContent='center'>
-        <Link to='add'>Add new photo</Link>
-      </Grid>
+      <TextLink linkTo='add' text='Add new photo' />
+      <Container maxWidth='lg'>
+        <ImageList cols={4} gap={30}>
+          <PhotoList list={photos} onEditClick={handleEditClick} onDeleteClick={handleDeleteClick} />
+        </ImageList>
+      </Container>
     </div>
   );
 }
